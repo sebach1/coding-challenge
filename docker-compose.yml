@@ -1,0 +1,29 @@
+version: "3"
+services:
+  db:
+    env_file: db.env
+    image: postgres@sha256:baf51b409ec8d7ee043bc33014e3c01ec06bcfbd0afa7b4cc5973fe56f46d09f
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  redis-huey:
+    image: redis@sha256:11c668c42354850a57e763dfaf466377160b4b7f8ca8a3386d1fe7635ad49925
+    volumes:
+      - redis:/data 
+
+  app:
+    env_file: 
+      - db.env
+      - app.env
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis-huey
+      
+volumes:
+  redis:
+  postgres:
