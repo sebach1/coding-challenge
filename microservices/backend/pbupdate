@@ -2,7 +2,7 @@
 for k in $(fd --maxdepth=1 --type=d)
 do
 	cd $k
-	go get -u github.com/athomecomar/athome/pb
+	go get -u github.com/sebach1/coding-challenge/microservices/pb
 	cd ..
 done
 git add ./*/go.mod
