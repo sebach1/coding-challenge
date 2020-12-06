@@ -4,30 +4,15 @@ cd $DIR/def
 
 export DIR=$(pwd)
 export BACKEND_DIR=$DIR/../../backend
-svcs="agreement checkout messenger notifier users semantic address identifier auth mailer products images services"
-#  --js_out="library=pb_$1,binary:js" \
-
-pbsharedcompile() {
-    protoc \
-        -I . \
-        -I ${GOPATH}/src \
-        -I ${GOPATH}/src/github.com/envoyproxy/protoc-gen-validate \
-        --go_out="plugins=grpc:../" \
-        --validate_out="lang=go:../" \
-        shared/$1
-
-    ../cleanpb ./shared/$1 >./clean/shared/$1
-}
+svcs="films"
 
 pbsvccompile() {
     protoc \
         -I . \
         -I ${GOPATH}/src \
-        -I ${GOPATH}/src/github.com/envoyproxy/protoc-gen-validate \
-        --go_out="plugins=grpc:../" \
-        --validate_out="lang=go:../" \
+        --go_out=../pbfilms --go_opt=paths=source_relative \
+        --go-grpc_out=../pbfilms --go-grpc_opt=paths=source_relative \
         $1.proto
-    ../cleanpb ./$1.proto >./clean/$1.proto
 }
 
 pbadd() {
@@ -37,7 +22,7 @@ pbadd() {
 }
 
 pbpropague() {
-    if [ $TAG = "" ]; then
+    if [ "$TAG" = "" ]; then
         echo "nil tag cant be propagated"
         exit 3
     fi
@@ -69,10 +54,17 @@ if [ ! ${build} = "n" ]; then
             mkdir -p $testdir
         fi
 
-        result=$(mockgen -source ${pkgdir}/${svc}.pb.go -destination ${testdir}/mock.go -package pb${svc}test || echo xd)
-        if [ ! ${result} = "" ]; then
-            echo $svc
-            exit 3
+        if [ ${svc} = films ]; then
+            symbols=FilmsClient,FilmsServer,Films_CreateJoinPeopleFilmServer,Films_CreateJoinPeopleFilmClient,Films_CreatePeopleServer,Films_CreatePeopleClient,Films_CreateFilmsServer
+            cd ${pkgdir}
+            mockgen -package pb${svc}test . ${symbols} >${testdir}/mock.go
+            cd ../def
+        else
+            result=$(mockgen -source ${pkgdir}/${svc}.pb.go -destination ${testdir}/mock.go -package pb${svc}test || echo xd)
+            if [ ! ${result} = "" ]; then
+                echo $svc
+                exit 3
+            fi
         fi
         pbadd $svc
     done

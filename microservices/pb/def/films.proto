@@ -12,11 +12,11 @@ service Films {
   rpc RetrieveFilmsWithPeople (RetrieveFilmsWithPeopleRequest) returns (RetrieveFilmsWithPeopleResponse) {}
   rpc CreateFilms (stream CreateFilmRequest) returns (google.protobuf.Empty) {}
   rpc CreatePeople (stream CreatePeopleRequest) returns (google.protobuf.Empty) {}
-  rpc CreateJoinPeopleFilm(stream CreateJoinPeopleFilm) returns (google.protobuf.Empty) {}
+  rpc CreateJoinPeopleFilm(stream CreateJoinPeopleFilmRequest) returns (google.protobuf.Empty) {}
 }
 
 
-message PeopleData = {
+message PeopleData {
   string name = 1;
   string external_reference = 2;
   uint64 age = 3;
@@ -26,7 +26,7 @@ message PeopleData = {
   string slug = 8;
 }
 
-message FilmData = {
+message FilmData {
   string title = 1;
   string external_reference = 2;
   uint64 release_year = 3;
@@ -37,39 +37,45 @@ message FilmData = {
   string slug = 8;
 }
 
-message FilmDataWithPeople = {
+message FilmDataWithPeople {
   FilmData film = 1;
   map <uint64, PeopleData> people = 2;
 }
 
-message RetrieveFilmsWithPeopleRequest = {
+message RetrieveFilmsWithPeopleRequest {
   uint64 limit = 1;
 }
 
-message RetrieveFilmsWithPeopleResponse = {
+message RetrieveFilmsWithPeopleResponse {
   map<uint64, FilmDataWithPeople> films = 1;
 }
 
-message RetrieveFilmsResponse = {
+message RetrieveFilmsResponse {
   map<uint64, FilmData> films = 1;
 }
 
-message RetrieveFilmsRequest = {
+message RetrieveFilmsRequest {
   uint64 limit = 1;
 }
 
-message RetrieveFilmRequest = {
+message RetrieveFilmRequest {
   uint64 id = 1;
 }
 
-message RetrieveFilmResponse = {
+message RetrieveFilmResponse {
   FilmData data = 1;
 }
 
-message CreateFilmRequest = {
+message CreateFilmRequest {
   FilmData data = 1;
 }
 
-message CreatePeopleRequest = {
+message CreatePeopleRequest {
   PeopleData data = 1;
 }
+
+message CreateJoinPeopleFilmRequest {
+  uint64 film_id = 1;
+  uint64 people_id = 2;
+}
+
