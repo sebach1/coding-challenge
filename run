@@ -1,0 +1,7 @@
+#!/bin/bash
+
+docker-compose up -d
+./run_worker &> worker.log &
+echo "Storing worker logs on 'worker.log'"
+echo "Running worker on $!"
+docker-compose up
