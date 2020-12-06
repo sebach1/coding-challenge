@@ -1,221 +1,75 @@
 syntax = "proto3";
 
-import "validate/validate.proto";
 import "google/protobuf/empty.proto";
 
-option go_package = "./pbusers";
+option go_package = "./pbfilms";
 
-package users;
+package films;
 
-service Viewer {
-  rpc RetrieveUser (RetrieveUserRequest) returns (User) {}
+service Films {
+  rpc RetrieveFilm (RetrieveFilmRequest) returns (RetrieveFilmResponse) {}
+  rpc RetrieveFilms (RetrieveFilmsRequest) returns (RetrieveFilmsResponse) {}
+  rpc RetrieveFilmsWithPeople (RetrieveFilmsWithPeopleRequest) returns (RetrieveFilmsWithPeopleResponse) {}
+  rpc CreateFilms (stream CreateFilmRequest) returns (google.protobuf.Empty) {}
+  rpc CreatePeople (stream CreatePeopleRequest) returns (google.protobuf.Empty) {}
+  rpc CreateJoinPeopleFilm(stream CreateJoinPeopleFilm) returns (google.protobuf.Empty) {}
 }
 
-service Sign {
-  rpc Sign (SignRequest) returns (SignResponse) {}
 
-  rpc SignIn (SignInRequest) returns (SignInResponse) {}
-  rpc SignOut (SignOutRequest) returns (google.protobuf.Empty) {}
-
-  rpc SwitchRole (SwitchRoleRequest) returns (SignResponse) {}
-
-  rpc SignUpStart (SignUpStartRequest) returns (SignUpStartResponse) {}
-  rpc SignUpShared (SignUpSharedRequest) returns (google.protobuf.Empty) {}
-  rpc SignUpSelectCategory (SignUpSelectCategoryRequest) returns (google.protobuf.Empty) {}
-
-  rpc SignUpIdentification (SignUpIdentificationRequest) returns (google.protobuf.Empty) {}
-
-  rpc SignUpEnd (SignUpEndRequest) returns (SignUpEndResponse) {}
-
-  rpc RetrieveSelectableCategories (RetrieveSelectableCategoriesRequest) returns (RetrieveSelectableCategoriesResponse) {}
-
-  rpc RetrieveOnboarding (RetrieveOnboardingRequest) returns (Onboarding) {}
-
-  rpc ForgotPassword (ForgotPasswordRequest) returns (google.protobuf.Empty) {}
-  rpc ResetPassword (ResetPasswordRequest) returns (google.protobuf.Empty) {}
-
-}
-message RetrieveSelectableCategoriesRequest{
-  uint64 onboarding_id = 1;
-}
-
-message RetrieveSelectableCategoriesResponse{
-  map<uint64, Category> categories = 1;
-}
-
-message SignUpIdentificationRequest {
-  uint64 onboarding_id = 1;
-  uint64 dni = 2 [(validate.rules).uint64 = {gt: 999999, lt: 99999999}];
-
-  oneof category{
-    Medic medic = 3;
-    Psychologist psychologist = 4;
-    Lawyer lawyer = 5;
-    Attorney attorney = 6;
-    EducationalInstitution educational_institution = 7;
-  }
-
-  message Medic {
-    string name = 1 [(validate.rules).string = {min_len: 2, max_len: 30}];
-    string surname = 2 [(validate.rules).string = {min_len: 2, max_len: 30}];
-  }
-
-  message EducationalInstitution {
-    uint64 cue = 1 [(validate.rules).uint64 = {gt: 20000000, lt: 999999999}];
-  }
-
-  message Attorney {
-    string name = 1 [(validate.rules).string = {min_len: 2, max_len: 30}];
-    string surname = 2 [(validate.rules).string = {min_len: 2, max_len: 30}];
-  }
-
-  message Lawyer {
-    string name = 1 [(validate.rules).string = {min_len: 2, max_len: 30}];
-    string surname = 2 [(validate.rules).string = {min_len: 2, max_len: 30}];
-  }
-
-  message Psychologist {
-    uint64 license = 1;
-  }
-}
-
-message SignUpSelectCategoryRequest{
-  uint64 onboarding_id = 1;
-  uint64 category_id = 2;
-}
-
-message Category{
+message PeopleData = {
   string name = 1;
-  uint64 parent_id = 2;
-  map<uint64, Category> childs = 3;
-  string identification_template = 4;
+  string external_reference = 2;
+  uint64 age = 3;
+  string gender = 4;
+  string hair_color = 5;
+  string eye_color = 6;
+  string slug = 8;
 }
 
-message SwitchRoleRequest {
-  string access_token = 1;
-  string role = 2 [(validate.rules).string = {in: ["service-provider", "consumer", "merchant"]}];
-  string password = 3;
+message FilmData = {
+  string title = 1;
+  string external_reference = 2;
+  uint64 release_year = 3;
+  string director_name = 4;
+  string producer_name = 5;
+  uint64 rating = 6;
+  uint64 id = 7;
+  string slug = 8;
 }
 
-message SignOutRequest {
-  string access_token = 1;
+message FilmDataWithPeople = {
+  FilmData film = 1;
+  map <uint64, PeopleData> people = 2;
 }
 
-message ResetPasswordRequest {
-  string token = 1;
-  string password = 2 [(validate.rules).string = {min_len: 6, max_len: 25}];
+message RetrieveFilmsWithPeopleRequest = {
+  uint64 limit = 1;
 }
 
-message ForgotPasswordRequest {
-  string email = 1 [(validate.rules).string = {email: true}];
+message RetrieveFilmsWithPeopleResponse = {
+  map<uint64, FilmDataWithPeople> films = 1;
 }
 
-message RetrieveUserRequest {
-  uint64 user_id = 1;
+message RetrieveFilmsResponse = {
+  map<uint64, FilmData> films = 1;
 }
 
-message Identification {
-  uint64 user_id = 1;
-  uint64 dni = 2;
-  bool   verified = 3;
-  string name = 4;
-  string surname = 5;
-  uint64 license = 6;
-  uint64 tome = 7;
-  uint64 folio = 8;
-  uint64 cue = 9;
+message RetrieveFilmsRequest = {
+  uint64 limit = 1;
 }
 
-message RetrieveOnboardingRequest {
-  uint64 onboarding_id = 1;
-}
-
-message Onboarding {
-  string role = 1;
-  string email = 2;
-  string name = 3;
-  string surname = 4;
-  int64 stage = 5;
-  uint64 address_id = 6;
-}
-
-message SignUpStartRequest {
-  string role = 1 [(validate.rules).string = {in: ["service-provider", "consumer", "merchant"]}];
-}
-
-message SignUpStartResponse{
-  uint64 onboarding_id = 1;
-}
-
-message SignUpSharedRequest {
-  uint64 onboarding_id = 1;
-  string email = 2 [(validate.rules).string = {email: true}];
-  string name = 3 [(validate.rules).string = {min_len: 2, max_len: 30}];
-  string surname = 4 [(validate.rules).string = {min_len: 2, max_len: 30}];
-}
-
-message SignUpEndRequest{
-  uint64 onboarding_id = 1;
-  string password = 2 [(validate.rules).string = {min_len: 6, max_len: 25}];
-}
-
-message SignUpEndResponse {
-  SignInUser user = 1;
-}
-
-message SignInRequest {
-  string email = 1 [(validate.rules).string = {email: true}];
-  string password = 2 [(validate.rules).string = {min_len: 6, max_len: 25}];
-}
-
-message SignInResponse {
-  repeated SignInUser users = 1;
-  uint64 sign_token_exp_ns = 7;
-
-}
-
-message SignInUser {
+message RetrieveFilmRequest = {
   uint64 id = 1;
-  string sign_token = 2;
-  User user = 3;
 }
 
-message User{
-  string role = 1;
-  string name = 2;
-  string surname = 3;
-  string email = 4;
-  uint64 category_id = 5;
-  uint64 address_id = 6;
+message RetrieveFilmResponse = {
+  FilmData data = 1;
 }
 
-message SignRequest {
-  string sign_token = 1;
+message CreateFilmRequest = {
+  FilmData data = 1;
 }
 
-message SignResponse {
-  string access_token = 1;
-  string refresh_token = 2;
-
-  uint64 access_token_exp_ns = 3;
-  uint64 refresh_token_exp_ns = 4;
-}
-
-
-service Config {
-  rpc ChangePassword (ChangePasswordRequest) returns (google.protobuf.Empty) {}
-  rpc ChangeBasicInfo (ChangeBasicInfoRequest) returns (google.protobuf.Empty) {}
-}
-
-message ChangePasswordRequest {
-  string access_token = 1;
-  string old_password = 2 [(validate.rules).string = {min_len: 6, max_len: 25}];
-  string new_password = 3 [(validate.rules).string = {min_len: 6, max_len: 25}];
-}
-
-message ChangeBasicInfoRequest {
-  string access_token = 1;
-
-  string name = 2 [(validate.rules).string = {min_len: 2, max_len: 30}];
-  string surname = 3 [(validate.rules).string = {min_len: 2, max_len: 30}];
+message CreatePeopleRequest = {
+  PeopleData data = 1;
 }
