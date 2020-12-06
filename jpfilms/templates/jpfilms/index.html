@@ -1,0 +1,120 @@
+<head>
+  <title>JPFilms</title>
+  <link
+    rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+    crossorigin="anonymous"
+  />
+</head>
+<div class="container" style="margin-top: 3.5%">
+  <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light">
+    <h1>JP Films</h1>
+  </div>
+
+  {% if films_list %}
+  <table id="table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Release date</th>
+        <th>Producer</th>
+        <th>Director</th>
+        <th>People</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for film in films_list %}
+      <tr>
+        <td>
+          <a href="{% url 'detail' film.slug %}">{{ film.title }}</a>
+        </td>
+        <td>{{ film.description }}</td>
+        <td>{{ film.release_year }}</td>
+        <td>{{ film.producer_name }}</td>
+        <td>{{ film.director_name }}</td>
+        <td>{{ film.people_set.all|join:", " }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% else %}
+  <p>No films are available.</p>
+  {% endif %} {% load static %}
+  <link href="{% static 'jpfilms/vanilla-dataTables.css' %}" rel="stylesheet" />
+  <script src="{% static 'jpfilms/vanilla-dataTables.js' %}"></script>
+  <div align="right">
+    <image src="{% static 'jpfilms/ghibli.gif' %}"></image>
+  </div>
+</div>
+
+<script>
+  var table = document.getElementById("table");
+  var options = {
+    // how many rows per page
+    perPage: 10,
+    perPageSelect: [5, 10, 15, 20, 25],
+
+    fixedColumns: true,
+    fixedHeight: false,
+
+    // Pagination
+    nextPrev: true,
+    firstLast: false,
+    prevText: "&lsaquo;",
+    nextText: "&rsaquo;",
+    firstText: "&laquo;",
+    lastText: "&raquo;",
+    ellipsisText: "&hellip;",
+    ascText: "▴",
+    descText: "▾",
+    truncatePager: true,
+    pagerDelta: 2,
+
+    // enables sorting
+    sortable: true,
+
+    // enables live search
+    searchable: true,
+
+    header: true,
+    footer: false,
+
+    // Customise the display text
+    labels: {
+      placeholder: "Search...", // The search input placeholder
+      perPage: "{select} films per page", // per-page dropdown label
+      noRows: "No films found", // Message shown when there are no search results
+      info: "Showing {start} to {end} of {rows} films", //
+    },
+
+    // Customise the layout
+    layout: {
+      top: "{select}{search}",
+      bottom: "{info}{pager}",
+    },
+  };
+  var dataTable = new DataTable(table, options);
+
+  dataTable.on("datatable.sort", function (table) {
+    console.log(table);
+    // fires when the data table is sorted
+  });
+
+  dataTable.on("datatable.change", function (table) {
+    console.log(table);
+    // fires on page change
+  });
+
+  dataTable.on("datatable.perpage", function (num) {
+    // fires when the perPage option is changed with the dropdown
+  });
+
+  dataTable.on("datatable.search", function (kws) {
+    console.log(table);
+    // fires on keyup during a search
+  });
+</script>
