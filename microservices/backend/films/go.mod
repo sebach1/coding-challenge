@@ -10,6 +10,7 @@ require (
 	github.com/jmoiron/sqlx v1.2.1-0.20191203222853-2ba0fc60eb4a
 	github.com/lib/pq v1.7.0
 	github.com/pkg/errors v0.9.1
+	github.com/sebach1/coding-challenge/microservices/pb v0.0.0-20201206192111-08a1ec9d200e // indirect
 	golang.org/x/sys v0.0.0-20200610111108-226ff32320da // indirect
 	google.golang.org/genproto v0.0.0-20200612171551-7676ae05be11 // indirect
 	google.golang.org/grpc v1.29.1
