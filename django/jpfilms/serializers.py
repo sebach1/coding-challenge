@@ -3,6 +3,14 @@ from django.template.defaultfilters import slugify
 
 SIG_IGNORE_KEY = False 
 
+'''
+map_dict performs a relative mapping given a mapper
+for example:
+    d: {"a": 1, "b": 2, "c": 3}
+    mapper: {"a": "aa", "c": SIG_IGNORE_KEY}
+    
+    results in: {"aa": 1, "b": 2}
+'''
 def map_dict(d: dict, mapper: dict) -> dict:
     mapped_dict = {}
     for k, v in d.items():
