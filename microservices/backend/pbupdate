@@ -1,0 +1,10 @@
+#!/bin/bash
+for k in $(fd --maxdepth=1 --type=d)
+do
+	cd $k
+	go get -u github.com/athomecomar/athome/pb
+	cd ..
+done
+git add ./*/go.mod
+git add ./*/go.sum
+git commit -m "pb: Bump dep pkgs to latest"
