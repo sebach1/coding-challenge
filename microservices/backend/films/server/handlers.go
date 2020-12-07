@@ -3,12 +3,17 @@ package server
 import (
 	"context"
 	"database/sql"
+	"io"
 
+	"github.com/athomecomar/storeql"
 	"github.com/athomecomar/xerrors"
+	"github.com/go-pg/pg"
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	"github.com/sebach1/coding-challenge/microservices/backend/films/ent"
 	"github.com/sebach1/coding-challenge/microservices/pb/pbfilms"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (s *Server) RetrieveFilm(ctx context.Context, in *pbfilms.RetrieveFilmRequest) (*pbfilms.RetrieveFilmResponse, error) {
@@ -37,7 +42,7 @@ func (s *Server) RetrieveFilms(ctx context.Context, in *pbfilms.RetrieveFilmsReq
 
 	rows, err := db.QueryxContext(ctx, `SELECT * FROM films LIMIT $1`, in.GetLimit())
 	if err != nil {
-		return nil, errors.Wrap(err, "QueryxContext")
+		return nil, status.Errorf(xerrors.Internal, "QueryxContext: %v", err)
 	}
 	defer rows.Close()
 
@@ -46,7 +51,7 @@ func (s *Server) RetrieveFilms(ctx context.Context, in *pbfilms.RetrieveFilmsReq
 		film := &ent.Film{}
 		err = rows.StructScan(film)
 		if err != nil {
-			return nil, errors.Wrap(err, "StructScan")
+			return nil, status.Errorf(xerrors.Internal, "StructScan: %v", err)
 		}
 		films[film.Id] = film.ToPb()
 	}
@@ -62,7 +67,7 @@ func (s *Server) RetrieveFilmsWithPeople(ctx context.Context, in *pbfilms.Retrie
 
 	filmsWithPeople, err := ent.GetFilmsWithPeople(ctx, db, in.GetLimit())
 	if err != nil {
-		return nil, errors.Wrap(err, "GetFilmsWithPeople")
+		return nil, status.Errorf(xerrors.Internal, "GetFilmsWithPeople: %v", err)
 	}
 	result := make(map[uint64]*pbfilms.FilmDataWithPeople)
 	for film, peopleSl := range filmsWithPeople {
@@ -73,4 +78,141 @@ func (s *Server) RetrieveFilmsWithPeople(ctx context.Context, in *pbfilms.Retrie
 		result[film.Id] = &pbfilms.FilmDataWithPeople{Film: film.ToPb(), People: peopleMap}
 	}
 	return &pbfilms.RetrieveFilmsWithPeopleResponse{Films: result}, nil
+}
+
+func (s *Server) CreateFilms(srv pbfilms.Films_CreateFilmsServer) error {
+	ctx := srv.Context()
+	db, err := ConnDB()
+	if err != nil {
+		return err
+	}
+	var resp *emptypb.Empty
+	for {
+		select {
+		case <-ctx.Done():
+			err = srv.SendAndClose(resp)
+			if err != nil {
+				return err
+			}
+			return ctx.Err()
+		default: // no-op
+		}
+
+		in, err := srv.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+
+		resp, err = s.createFilms(ctx, db, in.GetData())
+		if err != nil {
+			return err
+		}
+	}
+
+}
+
+func (s *Server) createFilms(ctx context.Context, db *sqlx.DB, in *pbfilms.FilmData) (*emptypb.Empty, error) {
+	film := ent.FilmFromPb(in)
+	err := storeql.InsertIntoDB(ctx, db, film)
+	if err != nil {
+		pgErr, ok := err.(pg.Error)
+		if ok && !pgErr.IntegrityViolation() { // Ignore integrity violations (to follow up same behavior as w django)
+			return nil, status.Errorf(xerrors.Internal, "InsertIntoDB: %v", err)
+		}
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *Server) CreatePeople(srv pbfilms.Films_CreatePeopleServer) error {
+	ctx := srv.Context()
+	db, err := ConnDB()
+	if err != nil {
+		return err
+	}
+	var resp *emptypb.Empty
+	for {
+		select {
+		case <-ctx.Done():
+			err = srv.SendAndClose(resp)
+			if err != nil {
+				return err
+			}
+			return ctx.Err()
+		default: // no-op
+		}
+
+		in, err := srv.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+
+		resp, err = s.createPeople(ctx, db, in.GetData())
+		if err != nil {
+			return err
+		}
+	}
+
+}
+
+func (s *Server) createPeople(ctx context.Context, db *sqlx.DB, in *pbfilms.PeopleData) (*emptypb.Empty, error) {
+	people := ent.PeopleFromPb(in)
+	err := storeql.InsertIntoDB(ctx, db, people)
+	if err != nil {
+		pgErr, ok := err.(pg.Error)
+		if ok && !pgErr.IntegrityViolation() { // Ignore integrity violations (to follow up same behavior as w django)
+			return nil, status.Errorf(xerrors.Internal, "InsertIntoDB: %v", err)
+		}
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *Server) CreateJoinPeopleFilm(srv pbfilms.Films_CreateJoinPeopleFilmServer) error {
+	ctx := srv.Context()
+	db, err := ConnDB()
+	if err != nil {
+		return err
+	}
+	var resp *emptypb.Empty
+	for {
+		select {
+		case <-ctx.Done():
+			err = srv.SendAndClose(resp)
+			if err != nil {
+				return err
+			}
+			return ctx.Err()
+		default: // no-op
+		}
+
+		in, err := srv.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+
+		resp, err = s.createJoinPeopleFilm(ctx, db, in)
+		if err != nil {
+			return err
+		}
+	}
+}
+
+func (s *Server) createJoinPeopleFilm(ctx context.Context, db *sqlx.DB, in *pbfilms.CreateJoinPeopleFilmRequest) (*emptypb.Empty, error) {
+	join := &ent.JoinPeopleFilm{FilmId: in.GetFilmId(), PeopleId: in.GetPeopleId()}
+	err := storeql.InsertIntoDB(ctx, db, join)
+	if err != nil {
+		pgErr, ok := err.(pg.Error)
+		if ok && !pgErr.IntegrityViolation() { // Ignore integrity violations (to follow up same behavior as w django)
+			return nil, status.Errorf(xerrors.Internal, "InsertIntoDB: %v", err)
+		}
+	}
+	return &emptypb.Empty{}, nil
 }
