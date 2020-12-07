@@ -46,14 +46,14 @@ func (s *Server) RetrieveFilms(ctx context.Context, in *pbfilms.RetrieveFilmsReq
 	}
 	defer rows.Close()
 
-	films := make(map[uint64]*pbfilms.FilmData)
+	var films []*pbfilms.FilmData
 	for rows.Next() {
 		film := &ent.Film{}
 		err = rows.StructScan(film)
 		if err != nil {
 			return nil, status.Errorf(xerrors.Internal, "StructScan: %v", err)
 		}
-		films[film.Id] = film.ToPb()
+		films = append(films, film.ToPb())
 	}
 	return &pbfilms.RetrieveFilmsResponse{Films: films}, nil
 }
@@ -69,13 +69,13 @@ func (s *Server) RetrieveFilmsWithPeople(ctx context.Context, in *pbfilms.Retrie
 	if err != nil {
 		return nil, status.Errorf(xerrors.Internal, "GetFilmsWithPeople: %v", err)
 	}
-	result := make(map[uint64]*pbfilms.FilmDataWithPeople)
+	var result []*pbfilms.FilmDataWithPeople
 	for film, peopleSl := range filmsWithPeople {
 		peopleMap := make(map[uint64]*pbfilms.PeopleData)
 		for _, ppl := range peopleSl {
 			peopleMap[ppl.Id] = ppl.ToPb()
 		}
-		result[film.Id] = &pbfilms.FilmDataWithPeople{Film: film.ToPb(), People: peopleMap}
+		result = append(result, &pbfilms.FilmDataWithPeople{Film: film.ToPb(), People: peopleMap})
 	}
 	return &pbfilms.RetrieveFilmsWithPeopleResponse{Films: result}, nil
 }
@@ -206,8 +206,16 @@ func (s *Server) CreateJoinPeopleFilm(srv pbfilms.Films_CreateJoinPeopleFilmServ
 }
 
 func (s *Server) createJoinPeopleFilm(ctx context.Context, db *sqlx.DB, in *pbfilms.CreateJoinPeopleFilmRequest) (*emptypb.Empty, error) {
-	join := &ent.JoinPeopleFilm{FilmId: in.GetFilmId(), PeopleId: in.GetPeopleId()}
-	err := storeql.InsertIntoDB(ctx, db, join)
+	filmId, err := ent.GetFilmIdByExternalReference(ctx, db, in.GetFilmExternalReference())
+	if err != nil {
+		return nil, status.Errorf(xerrors.Internal, "GetFilmIdByExternalReference: %v", err)
+	}
+	pplId, err := ent.GetPeopleIdByExternalReference(ctx, db, in.GetPeopleExternalReference())
+	if err != nil {
+		return nil, status.Errorf(xerrors.Internal, "GetPeopleIdByExternalReference: %v", err)
+	}
+	join := &ent.JoinPeopleFilm{FilmId: filmId, PeopleId: pplId}
+	err = storeql.InsertIntoDB(ctx, db, join)
 	if err != nil {
 		pgErr, ok := err.(pg.Error)
 		if ok && !pgErr.IntegrityViolation() { // Ignore integrity violations (to follow up same behavior as w django)
