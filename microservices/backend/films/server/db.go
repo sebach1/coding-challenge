@@ -6,7 +6,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/sebach1/coding-challenge/microservices/backend/people/filmsconf"
+	"github.com/sebach1/coding-challenge/microservices/backend/films/filmsconf"
 	"google.golang.org/grpc/status"
 )
 

@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/sebach1/coding-challenge/microservices/backend/people/filmsconf"
+	"github.com/sebach1/coding-challenge/microservices/backend/films/filmsconf"
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"

@@ -3,7 +3,7 @@ package filmstest
 import (
 	"testing"
 
-	"github.com/sebach1/coding-challenge/microservices/backend/people/ent"
+	"github.com/sebach1/coding-challenge/microservices/backend/films/ent"
 )
 
 func CopyFilm(t *testing.T, o *ent.Film) *ent.Film {

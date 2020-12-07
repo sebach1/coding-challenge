@@ -1,3 +1,7 @@
-package server 
+package server
 
-type Server struct{}
+import "github.com/sebach1/coding-challenge/microservices/pb/pbfilms"
+
+type Server struct {
+	*pbfilms.UnimplementedFilmsServer
+}
