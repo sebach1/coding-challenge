@@ -9,7 +9,6 @@ func (s *service) GetAddr() string {
 }
 
 func (s *service) GetPort() (port string) {
-
 	return devPorts[s.Name]
 }
 
