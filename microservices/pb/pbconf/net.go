@@ -19,10 +19,8 @@ func (s *service) GetHost() (h string) {
 
 var (
 	Films = &service{Name: "films"}
-	Sync  = &service{Name: "sync"}
 )
 
 var devPorts = map[string]string{
-	"films": ":9900",
-	"sync":  ":9991",
+	"films": ":9990",
 }

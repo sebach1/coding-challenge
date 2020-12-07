@@ -3,6 +3,7 @@ module github.com/sebach1/coding-challenge/microservices/pb
 go 1.14
 
 require (
+	github.com/golang/mock v1.1.1
 	github.com/golang/protobuf v1.4.3
 	golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb // indirect
 	golang.org/x/sys v0.0.0-20201204225414-ed752295db88 // indirect

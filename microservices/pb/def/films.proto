@@ -76,7 +76,7 @@ message CreatePeopleRequest {
 }
 
 message CreateJoinPeopleFilmRequest {
-  uint64 film_id = 1;
-  uint64 people_id = 2;
+  string film_external_reference = 1;
+  string people_external_reference = 2;
 }
 
