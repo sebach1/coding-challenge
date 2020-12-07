@@ -1,199 +1,41 @@
-version: "3.7"
+version: "3"
 services:
-  users_db:
+  films_db:
     env_file: backend/users/build/db/dev.env
-    image: postgres:12
+    image: postgres@sha256:baf51b409ec8d7ee043bc33014e3c01ec06bcfbd0afa7b4cc5973fe56f46d09f
     volumes:
-      - users_db:/var/lib/postgresql/data
+      - films_db:/var/lib/postgresql/data
 
-  users_svc:
-    env_file: backend/users/build/svc/dev.env
+  films_svc:
+    env_file: backend/films/build/svc/dev.env
     build:
-      context: backend/users
+      context: backend/films
       args:
-        github_user: ${GITHUB_USER}
-        github_token: ${GITHUB_TOKEN}
-        svc_name: users
+        svc_name: films
     ports:
       - "9990:9990"
     volumes:
-      - ./backend/users/migrations:/users/migrations
+      - ./backend/films/migrations:/films/migrations
     depends_on:
-      - users_db
+      - films_db
 
-  products_db:
-    env_file: backend/products/build/db/dev.env
-    image: postgres:12
-    volumes:
-      - products_db:/var/lib/postgresql/data
-
-  products_svc:
-    env_file: backend/products/build/svc/dev.env
+  ghibli_svc:
+    env_file: backend/ghibli/build/svc/dev.env
     build:
-      context: backend/products
+      context: backend/ghibli
       args:
-        github_user: ${GITHUB_USER}
-        github_token: ${GITHUB_TOKEN}
-        svc_name: products
-    ports:
-      - "9992:9992"
-    volumes:
-      - ./backend/products/migrations:/products/migrations
-    depends_on:
-      - products_db
-
-  notifier_db:
-    env_file: backend/notifier/build/db/dev.env
-    image: postgres:12
-    volumes:
-      - notifier_db:/var/lib/postgresql/data
-
-  notifier_svc:
-    env_file: backend/notifier/build/svc/dev.env
-    build:
-      context: backend/notifier
-      args:
-        github_user: ${GITHUB_USER}
-        github_token: ${GITHUB_TOKEN}
-        svc_name: notifier
-    ports:
-      - "9996:9996"
-    volumes:
-      - ./backend/notifier/migrations:/notifier/migrations
-    depends_on:
-      - notifier_db
-
-
-  images_svc:
-    env_file: backend/images/build/svc/dev.env
-    build:
-      context: backend/images
-      args:
-        github_user: ${GITHUB_USER}
-        github_token: ${GITHUB_TOKEN}
-        svc_name: images
-    volumes:
-      - ./backend/images/tmp:/images/tmp
-      - ./backend/images/tmp_:/tmp
-    ports:
-      - "9993:9993"
-
-  address_svc:
-    env_file: backend/address/build/svc/dev.env
-    build:
-      context: backend/address
-      args:
-        github_user: ${GITHUB_USER}
-        github_token: ${GITHUB_TOKEN}
-        svc_name: address
-    ports:
-      - "9995:9995"
-    volumes:
-      - ./backend/address/migrations:/address/migrations
-    depends_on:
-      - address_db
-
-  services_svc:
-    env_file: backend/services/build/svc/dev.env
-    build:
-      context: backend/services
-      args:
-        github_user: ${GITHUB_USER}
-        github_token: ${GITHUB_TOKEN}
-        svc_name: services
-    ports:
-      - "9994:9994"
-    volumes:
-      - ./backend/services/migrations:/services/migrations
-    depends_on:
-      - services_db
-
-  services_db:
-    env_file: backend/services/build/db/dev.env
-    image: postgres:12
-    volumes:
-      - services_db:/var/lib/postgresql/data
-
-  address_db:
-    env_file: backend/address/build/db/dev.env
-    image: postgres:12
-    volumes:
-      - address_db:/var/lib/postgresql/data
-
-  semantic_db:
-    env_file: backend/semantic/build/db/dev.env
-    image: postgres:12
-    volumes:
-      - semantic_db:/var/lib/postgresql/data
-
-  semantic_svc:
-    env_file: backend/semantic/build/svc/dev.env
-    build:
-      context: backend/semantic
-      args:
-        github_user: ${GITHUB_USER}
-        github_token: ${GITHUB_TOKEN}
-        svc_name: semantic
+        svc_name: ghibli 
     ports:
       - "9991:9991"
-    volumes:
-      - ./backend/semantic/migrations:/semantic/migrations
     depends_on:
-      - semantic_db
+      - ghibli_redis
 
-  mailer_svc:
-    env_file: backend/mailer/build/svc/dev.env
-    build:
-      context: backend/mailer
-      args:
-        github_user: ${GITHUB_USER}
-        github_token: ${GITHUB_TOKEN}
-        svc_name: mailer
-    ports:
-      - "9901:9901"
-
-  identifier_svc:
-    env_file: backend/identifier/build/svc/dev.env
-    build:
-      context: backend/identifier
-      args:
-        github_user: ${GITHUB_USER}
-        github_token: ${GITHUB_TOKEN}
-        svc_name: identifier
-    ports:
-      - "9902:9902"
-
-  auth_svc:
-    env_file: backend/auth/build/svc/dev.env
-    build:
-      context: backend/auth
-      args:
-        github_user: ${GITHUB_USER}
-        github_token: ${GITHUB_TOKEN}
-        svc_name: auth
-    ports:
-      - "9900:9900"
-    depends_on:
-      - auth_redis
-
-  auth_redis:
-    image: redis:4-alpine
+  ghibli_redis:
+    image: redis@sha256:11c668c42354850a57e763dfaf466377160b4b7f8ca8a3386d1fe7635ad49925
     command: redis-server --requirepass redis_pwd
     volumes:
-      - auth_redis:/data
+      - ghibli_redis:/data
 
 volumes:
-  images_svc:
-  users_svc:
-  users_db:
-  notifier_svc:
-  notifier_db:
-  products_svc:
-  products_db:
-  auth_redis:
-  semantic_svc:
-  semantic_db:
-  address_svc:
-  address_db:
-  services_svc:
-  services_db:
+  films_db:
+  ghibli_redis:
