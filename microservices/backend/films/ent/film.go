@@ -25,7 +25,7 @@ func FilmFromPb(pbfilm *pbfilms.FilmData) *Film {
 	return &Film{
 		Title:             pbfilm.Title,
 		ExternalReference: pbfilm.ExternalReference,
-		Slug:              pbfilm.Slug,
+		Slug:              newSlug(pbfilm.Title),
 		DirectorName:      pbfilm.DirectorName,
 		ProducerName:      pbfilm.ProducerName,
 		Rating:            int(pbfilm.Rating),
@@ -42,9 +42,20 @@ func (f *Film) ToPb() *pbfilms.FilmData {
 		DirectorName:      f.DirectorName,
 		ProducerName:      f.ProducerName,
 		Rating:            uint64(f.Rating),
+		Id:                uint64(f.Id),
 		ReleaseYear:       uint64(f.ReleaseYear),
 		Description:       string(f.Description),
 	}
+}
+
+func GetFilmIdByExternalReference(ctx context.Context, db *sqlx.DB, ref string) (uint64, error) {
+	row := db.QueryRowxContext(ctx, `SELECT id FROM films WHERE external_reference = $1`, ref)
+	var id uint64
+	err := row.Scan(&id)
+	if err != nil {
+		return 0, errors.Wrap(err, "Scan")
+	}
+	return id, nil
 }
 
 func GetFilmsWithPeople(ctx context.Context, db *sqlx.DB, limit uint64) (map[*Film][]*People, error) {

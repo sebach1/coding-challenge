@@ -24,7 +24,7 @@ func PeopleFromPb(pbpeople *pbfilms.PeopleData) *People {
 	return &People{
 		Name:              pbpeople.Name,
 		ExternalReference: pbpeople.ExternalReference,
-		Slug:              pbpeople.Slug,
+		Slug:              newSlug(pbpeople.Name),
 		HairColor:         pbpeople.HairColor,
 		EyeColor:          pbpeople.EyeColor,
 		Age:               pbpeople.Age,
@@ -39,7 +39,18 @@ func (p *People) ToPb() *pbfilms.PeopleData {
 		HairColor:         p.HairColor,
 		EyeColor:          p.EyeColor,
 		Age:               p.Age,
+		Id:                uint64(p.Id),
 	}
+}
+
+func GetPeopleIdByExternalReference(ctx context.Context, db *sqlx.DB, ref string) (uint64, error) {
+	row := db.QueryRowxContext(ctx, `SELECT id FROM people WHERE external_reference = $1`, ref)
+	var id uint64
+	err := row.Scan(&id)
+	if err != nil {
+		return 0, errors.Wrap(err, "Scan")
+	}
+	return id, nil
 }
 
 func GetPeopleByIds(ctx context.Context, db *sqlx.DB, peopleIds ...uint64) ([]*People, error) {
