@@ -1,3 +1,0 @@
-#!/bin/sh
-cd ../../
-docker-compose exec -T films_db psql -U postgres -c "create database films_dev"
