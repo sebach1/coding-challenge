@@ -21,6 +21,19 @@ type Film struct {
 	ExternalReference string `json:"external_reference,omitempty"`
 }
 
+func FilmFromPb(pbfilm *pbfilms.FilmData) *Film {
+	return &Film{
+		Title:             pbfilm.Title,
+		ExternalReference: pbfilm.ExternalReference,
+		Slug:              pbfilm.Slug,
+		DirectorName:      pbfilm.DirectorName,
+		ProducerName:      pbfilm.ProducerName,
+		Rating:            int(pbfilm.Rating),
+		ReleaseYear:       int(pbfilm.ReleaseYear),
+		Description:       []byte(pbfilm.Description),
+	}
+}
+
 func (f *Film) ToPb() *pbfilms.FilmData {
 	return &pbfilms.FilmData{
 		Title:             f.Title,

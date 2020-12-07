@@ -20,6 +20,17 @@ type People struct {
 	ExternalReference string `json:"external_reference,omitempty"`
 }
 
+func PeopleFromPb(pbpeople *pbfilms.PeopleData) *People {
+	return &People{
+		Name:              pbpeople.Name,
+		ExternalReference: pbpeople.ExternalReference,
+		Slug:              pbpeople.Slug,
+		HairColor:         pbpeople.HairColor,
+		EyeColor:          pbpeople.EyeColor,
+		Age:               pbpeople.Age,
+	}
+}
+
 func (p *People) ToPb() *pbfilms.PeopleData {
 	return &pbfilms.PeopleData{
 		Name:              p.Name,
