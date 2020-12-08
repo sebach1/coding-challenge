@@ -1,0 +1,9 @@
+#!/bin/sh
+docker-compose down -v
+docker-compose build --parallel
+docker-compose up -d films_svc
+sleep 0.5
+docker-compose exec -T films_db psql -U postgres -c "create database films_dev"
+docker-compose exec -T films_svc ./migrate up
+docker-compose down
+docker-compose up -d

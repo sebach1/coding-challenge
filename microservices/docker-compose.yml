@@ -33,6 +33,8 @@ services:
       context: backend/ghibli
       args:
         svc_name: ghibli
+    depends_on:
+     - films_svc
 
 volumes:
   films_db:
