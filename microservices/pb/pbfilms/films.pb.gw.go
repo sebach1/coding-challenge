@@ -139,6 +139,7 @@ func RegisterFilmsHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 	meths := []string{"GET", "OPTIONS"}
 	for _, m := range meths {
 		mux.Handle(m, pattern_Films_RetrieveFilmsWithPeople_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
 			ctx, cancel := context.WithCancel(req.Context())
 			defer cancel()
 			inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
