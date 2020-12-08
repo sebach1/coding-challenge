@@ -12,10 +12,10 @@
 
 ## TODOs
 
-If having a lil more of time, is prior to:
- - Perform tests (using pb/pb<pkg>test mocks when relying in a gRPC svc)
+If having more time, it is important to:
+ - Perform tests (using pb/pb<pkg>test mocks as long as relying in a gRPC svc)
  - Isolate people svc from films one if wanted
- - Add /movies/:slug route with the movie detail 
+ - Add /movies/:slug route serving the movie's detail 
  - Add real-time updates on frontend using the gRPC bidirectional streaming over HTTP/2
 
 
@@ -45,12 +45,12 @@ If having a lil more of time, is prior to:
 
     b. proxy (`:10000`) 
 
-    Using grpc-go-gateway, it proxies all incoming requests from browser to gRPC API (listening at :9990), and transforms the protobuf response to a  jsonified version, to provide REST-like API.
+    Using grpc-go-gateway proxies all incoming requests from browser to gRPC API (listening at :9990) and transforms the protobuf response to a jsonified version to provide REST-like API.
 
 
 - ./backend/ghibli
 
-The service is a scheduler with a jobs handler, which manages tasks in a lightweight-way (without Redis or crontab). It's responsible for syncing with the Ghibli API, using the films svc.
+The service is a scheduler with a jobs handler, which manages tasks in a lightweight-way (without Redis or crontab). It's responsible for syncing with the Ghibli API using the films svc.
 
 ### Frontend
 
