@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
 option go_package = "./pbfilms";
@@ -9,7 +10,9 @@ package films;
 service Films {
   rpc RetrieveFilm (RetrieveFilmRequest) returns (RetrieveFilmResponse) {}
   rpc RetrieveFilms (RetrieveFilmsRequest) returns (RetrieveFilmsResponse) {}
-  rpc RetrieveFilmsWithPeople (RetrieveFilmsWithPeopleRequest) returns (RetrieveFilmsWithPeopleResponse) {}
+  rpc RetrieveFilmsWithPeople (RetrieveFilmsWithPeopleRequest) returns (RetrieveFilmsWithPeopleResponse) {
+   option (google.api.http) = { get: "/films"};
+  }
   rpc CreateFilms (stream CreateFilmRequest) returns (google.protobuf.Empty) {}
   rpc CreatePeople (stream CreatePeopleRequest) returns (google.protobuf.Empty) {}
   rpc CreateJoinPeopleFilm(stream CreateJoinPeopleFilmRequest) returns (google.protobuf.Empty) {}
