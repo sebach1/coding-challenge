@@ -54,7 +54,15 @@ func GetPeopleIdByExternalReference(ctx context.Context, db *sqlx.DB, ref string
 }
 
 func GetPeopleByIds(ctx context.Context, db *sqlx.DB, peopleIds ...uint64) ([]*People, error) {
-	rows, err := db.QueryxContext(ctx, `SELECT * FROM people WHERE id=in($1)`, peopleIds)
+	if len(peopleIds) == 0 {
+		return nil, nil
+	}
+	query, args, err := sqlx.In(`SELECT * FROM people WHERE id IN(?)`, peopleIds)
+	if err != nil {
+		return nil, errors.Wrap(err, "sqlx.In")
+	}
+	query = db.Rebind(query)
+	rows, err := db.QueryxContext(ctx, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "QueryxContext")
 	}

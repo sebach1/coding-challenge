@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"io"
+	"strconv"
 
 	"github.com/athomecomar/storeql"
 	"github.com/athomecomar/xerrors"
@@ -71,9 +72,9 @@ func (s *Server) RetrieveFilmsWithPeople(ctx context.Context, in *pbfilms.Retrie
 	}
 	var result []*pbfilms.FilmDataWithPeople
 	for film, peopleSl := range filmsWithPeople {
-		peopleMap := make(map[uint64]*pbfilms.PeopleData)
+		peopleMap := make(map[string]*pbfilms.PeopleData)
 		for _, ppl := range peopleSl {
-			peopleMap[ppl.Id] = ppl.ToPb()
+			peopleMap[strconv.Itoa(int(ppl.Id))] = ppl.ToPb()
 		}
 		result = append(result, &pbfilms.FilmDataWithPeople{Film: film.ToPb(), People: peopleMap})
 	}
@@ -215,7 +216,8 @@ func (s *Server) createJoinPeopleFilm(ctx context.Context, db *sqlx.DB, in *pbfi
 		return nil, status.Errorf(xerrors.Internal, "GetPeopleIdByExternalReference: %v", err)
 	}
 	join := &ent.JoinPeopleFilm{FilmId: filmId, PeopleId: pplId}
-	err = storeql.InsertIntoDB(ctx, db, join)
+
+	err = join.InsertIntoDB(ctx, db)
 	if err != nil {
 		pgErr, ok := err.(pg.Error)
 		if ok && !pgErr.IntegrityViolation() { // Ignore integrity violations (to follow up same behavior as w django)

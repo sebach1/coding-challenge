@@ -11,7 +11,7 @@ func (j *JoinPeopleFilm) SetId(id uint64) {
 }
 
 func (j *JoinPeopleFilm) SQLTable() string {
-	return "people"
+	return "join_people_films"
 }
 
 func (j *JoinPeopleFilm) SQLMap() map[string]driver.Value {

@@ -11,7 +11,7 @@ require (
 	github.com/jmoiron/sqlx v1.2.1-0.20191203222853-2ba0fc60eb4a
 	github.com/lib/pq v1.7.0
 	github.com/pkg/errors v0.9.1
-	github.com/sebach1/coding-challenge/microservices/pb v0.0.0-20201207182820-1e8b2a526270
+	github.com/sebach1/coding-challenge/microservices/pb v0.0.0-20201208122852-acfae2a8392c
 	golang.org/x/crypto v0.0.0-20201203163018-be400aefbc4c // indirect
 	google.golang.org/grpc v1.34.0
 	google.golang.org/protobuf v1.25.0

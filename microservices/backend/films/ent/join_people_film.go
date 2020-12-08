@@ -14,7 +14,15 @@ type JoinPeopleFilm struct {
 }
 
 func GetJoinsByFilmIds(ctx context.Context, db *sqlx.DB, filmIds ...uint64) ([]*JoinPeopleFilm, error) {
-	rows, err := db.QueryxContext(ctx, `SELECT * FROM join_people_films WHERE film_id=in($1)`, filmIds)
+	if len(filmIds) == 0 {
+		return nil, nil
+	}
+	query, args, err := sqlx.In(`SELECT * FROM join_people_films WHERE film_id IN(?);`, filmIds)
+	if err != nil {
+		return nil, errors.Wrap(err, "sqlx.In")
+	}
+	query = db.Rebind(query)
+	rows, err := db.QueryxContext(ctx, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "QueryxContext")
 	}
@@ -30,6 +38,29 @@ func GetJoinsByFilmIds(ctx context.Context, db *sqlx.DB, filmIds ...uint64) ([]*
 		joins = append(joins, join)
 	}
 	return joins, nil
+}
+
+func (j *JoinPeopleFilm) InsertIntoDB(ctx context.Context, db *sqlx.DB) error {
+	ids, err := db.NamedQueryContext(ctx, `INSERT INTO join_people_films(film_id, people_id) VALUES(:film_id, :people_id) RETURNING id`, j)
+	if err != nil {
+		return errors.Wrap(err, "NamedQueryContext")
+	}
+	defer ids.Close()
+	var i int
+	for ids.Next() {
+		var id uint64
+		err := ids.Scan(&id)
+		if err != nil {
+			return errors.Wrap(err, "Scan")
+		}
+		j.SetId(id)
+		i += 1
+	}
+	err = ids.Err()
+	if err != nil {
+		return errors.Wrap(err, "cursor.Err")
+	}
+	return nil
 }
 
 func JoinsToMap(joins ...*JoinPeopleFilm) map[uint64][]uint64 {

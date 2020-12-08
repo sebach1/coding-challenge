@@ -59,7 +59,7 @@ func GetFilmIdByExternalReference(ctx context.Context, db *sqlx.DB, ref string) 
 }
 
 func GetFilmsWithPeople(ctx context.Context, db *sqlx.DB, limit uint64) (map[*Film][]*People, error) {
-	rows, err := db.QueryxContext(ctx, `SELECT * FROM films LIMIT $1`, limit)
+	rows, err := db.QueryxContext(ctx, `SELECT * FROM films ORDER BY title LIMIT $1`, limit)
 	if err != nil {
 		return nil, errors.Wrap(err, "QueryxContext")
 	}
@@ -81,19 +81,26 @@ func GetFilmsWithPeople(ctx context.Context, db *sqlx.DB, limit uint64) (map[*Fi
 	if err != nil {
 		return nil, errors.Wrap(err, "GetJoinsByFilmIds")
 	}
+	if len(joins) == 0 {
+		return map[*Film][]*People{}, nil
+	}
 
+	var people []*People
 	var peopleIds []uint64
 	for _, join := range joins {
 		peopleIds = append(peopleIds, join.PeopleId)
 	}
-
-	rows, err = db.QueryxContext(ctx, `SELECT * FROM people WHERE id in($1)`, peopleIds)
+	query, args, err := sqlx.In(`SELECT * FROM people WHERE id IN(?)`, peopleIds)
+	if err != nil {
+		return nil, errors.Wrap(err, "sqlx.In")
+	}
+	query = db.Rebind(query)
+	rows, err = db.QueryxContext(ctx, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "QueryxContext")
 	}
 	defer rows.Close()
 
-	var people []*People
 	for rows.Next() {
 		ppl := &People{}
 		err = rows.StructScan(ppl)
