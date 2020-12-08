@@ -1,12 +1,63 @@
+# Microservices approach
+
+- [Microservices approach](#microservices-approach)
+  - [TODOs](#todos)
+  - [Requirements](#requirements)
+  - [Commands](#commands)
+  - [Routes](#routes)
+  - [Structure](#structure)
+    - [Backend](#backend)
+    - [Frontend](#frontend)
+    - [Pb](#pb)
+
+## TODOs
+
+If having a lil more of time, is prior to:
+ - Perform tests (using pb/pb<pkg>test mocks when relying in a gRPC svc)
+ - Isolate people svc from films one if wanted
+ - Add /movies/:slug route with the movie detail 
+ - Add real-time updates on frontend using the gRPC bidirectional streaming over HTTP/2
+
+
+## Requirements
+
+- docker-compose
+
+## Commands
+
+- First time setup & run: `./setup` 
+
+- Run: `./up`
+
+## Routes
+
+- `localhost:8000/movies`
+
 ## Structure 
 
-### Protocol buffers
+### Backend
 
-- pb/: holds all protocol buffers related things.
-- pb/<pkg>.proto: proto declarations.
+- ./backend/films
+   
+    a. films (`:9990`) 
 
-- ./backend/<svc>/pb<svc>/: holds compiled pb code.
+    Responsible for serving all CRUD operations over films, people and their relations. 
 
-- pb/js/: holds the compiled code from the protocol buffers to js.
-- pb/js/pb_<pkg>.js: holds the compiled code to use the <pkg> pb.
+    b. proxy (`:10000`) 
 
+    Using grpc-go-gateway, it proxies all incoming requests from browser to gRPC API (listening at :9990), and transforms the protobuf response to a  jsonified version, to provide REST-like API.
+
+
+- ./backend/ghibli
+
+The service is a scheduler with a jobs handler, which manages tasks in a lightweight-way (without Redis or crontab). It's responsible for syncing with the Ghibli API, using the films svc.
+
+### Frontend
+
+- ./frontend: holds the frontend (exposed at `:8000` as a Vue Single Web App).
+
+### Pb
+
+- pb/pbconf: svc configuration module.
+- pb/<pkg>/*.pb.go: grpc generated code for golang client and server.
+- pb/def/<pkg>.proto: proto declarations.
