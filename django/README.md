@@ -1,15 +1,26 @@
-1. No hay criterio sobre si el 3rd party almacena bien la data (ej: restore de ids)
-2. Mejorar err handling
+# Monolithic approach 
 
-# Django project
+- [Monolithic approach](#monolithic-approach)
+  - [TODOs](#todos)
+  - [Requirements](#requirements)
+  - [Commands](#commands)
+  - [Routes](#routes)
+  - [Services](#services)
+  - [Notes](#notes)
+## TODOs
 
+If having a lil more of time, is prior to:
+ - Create more unit tests (mostly on the sync related tasks) 
+ - Create e2e tests 
+ - Improve the error handling over huey tasks
+ - Add third-party data criteria since it relies on Ghibli's data integrity (for example: Ghibli's re-addition of movies would modify its ids, and then create a duplicated record on our side).
 ## Requirements
 
 - docker-compose
 
 ## Commands
 
-- First time setup & run: `./setup` (requires docker-compose).
+- First time setup & run: `./setup`
 
 - Only worker (as daemon): `./run_worker`
 > It'll create a worker.log in the root, with stdout and stderr of the subprocess
@@ -32,3 +43,9 @@ The project contains the following services:
 - app: the main application service. It serves the Django project along with all its apps.
 - db: the postgres service. It serves a persistent storage for the app.
 - redis-huey: redis store to use HueyRedis. It serves a redis server to workers (in app), which will perform tasks.
+
+## Notes
+
+I considered using Huey as the best approach for the project since I think Celery or Django Background Tasks are an overhead for that minimal usecase.
+
+Its a need to improve style code (I don't have a good Python environment due I'm not on my laptop).
