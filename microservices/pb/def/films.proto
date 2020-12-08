@@ -41,7 +41,7 @@ message FilmData {
 
 message FilmDataWithPeople {
   FilmData film = 1;
-  map <uint64, PeopleData> people = 2;
+  map <string, PeopleData> people = 2;
 }
 
 message RetrieveFilmsWithPeopleRequest {
