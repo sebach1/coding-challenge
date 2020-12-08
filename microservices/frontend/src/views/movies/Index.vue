@@ -1,60 +1,55 @@
 <template>
   <div>
-    <md-table>
-      <md-table-row>
-        <md-table-head md-numeric>ID</md-table-head>
-        <md-table-head>Name</md-table-head>
-        <md-table-head>Email</md-table-head>
-        <md-table-head>Gender</md-table-head>
-        <md-table-head>Job Title</md-table-head>
-      </md-table-row>
 
-      <md-table-row>
-        <md-table-cell md-numeric>1</md-table-cell>
-        <md-table-cell>Shawna Dubbin</md-table-cell>
-        <md-table-cell>sdubbin0@geocities.com</md-table-cell>
-        <md-table-cell>Male</md-table-cell>
-        <md-table-cell>Assistant Media Planner</md-table-cell>
-      </md-table-row>
+    <md-table v-if="films" v-model="films"  md-sort="title"  md-card>
+      <md-table-toolbar>
+        <h1 class="md-title">Films</h1>
+      </md-table-toolbar>
 
-      <md-table-row>
-        <md-table-cell md-numeric>2</md-table-cell>
-        <md-table-cell>Odette Demageard</md-table-cell>
-        <md-table-cell>odemageard1@spotify.com</md-table-cell>
-        <md-table-cell>Female</md-table-cell>
-        <md-table-cell>Account Coordinator</md-table-cell>
-      </md-table-row>
-
-      <md-table-row>
-        <md-table-cell md-numeric>3</md-table-cell>
-        <md-table-cell>Vera Taleworth</md-table-cell>
-        <md-table-cell>vtaleworth2@google.ca</md-table-cell>
-        <md-table-cell>Male</md-table-cell>
-        <md-table-cell>Community Outreach Specialist</md-table-cell>
+      <md-table-row slot="md-table-row" slot-scope="{ item }">
+        <md-table-cell md-label="ID" md-sort-by="film.id" md-numeric>{{ item.film.id }}</md-table-cell>
+        <md-table-cell md-label="Title" md-sort-by="film.title">{{ item.film.title }}</md-table-cell>
+        <md-table-cell md-label="Description" md-sort-by="film.description">{{ item.film.description }}</md-table-cell>
+        <md-table-cell md-label="Director" md-sort-by="film.directorName">{{ item.film.directorName }}</md-table-cell>
+        <md-table-cell md-label="Producer" md-sort-by="film.producerName">{{ item.film.producerName }}</md-table-cell>
+        <md-table-cell md-label="Release year" md-sort-by="film.releaseYear">{{ item.film.releaseYear }}</md-table-cell>
+        <md-table-cell md-label="Rating" md-sort-by="film.rating">{{ item.film.rating }}</md-table-cell>
+        <md-table-cell md-label="People">
+          {{ displayPeople(item.people) }}
+        </md-table-cell>
       </md-table-row>
     </md-table>
+
   </div>
 </template>
-
 <script>
 import axios from "axios"
 export default {
   data() {
     return {
-      films: [],
+      films: undefined,
     };
   },
-  mounted() {
+mounted() {
     this.fetchFilms();
   },
   methods: {
     fetchFilms() {
       fetch('http://localhost:10000/films')
         .then(response => response.json())
-        .then(json => console.log(json))
-   },
+        .then((films) =>{
+         this.films = films.films;
+        }
+      )},
+    displayPeople(ppl){
+      if (!ppl){
+        return ""
+      }
+      return Object.values(ppl).map(x => x.name).join(", ");
+    },
    }
   }
 
+        // <md-icon>movie</md-icon>
 
 </script>

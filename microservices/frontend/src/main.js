@@ -3,11 +3,14 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
-import { MdTable, MdContent } from 'vue-material/dist/components'
+import { MdCard,MdRipple,MdTable, MdContent, MdIcon } from 'vue-material/dist/components'
 import 'vue-material/dist/vue-material.min.css'
 
+Vue.use(MdRipple)
 Vue.use(MdContent)
 Vue.use(MdTable)
+Vue.use(MdIcon)
+Vue.use(MdCard)
 
 Vue.config.productionTip = false
 
