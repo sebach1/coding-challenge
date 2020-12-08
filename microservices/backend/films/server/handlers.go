@@ -65,8 +65,11 @@ func (s *Server) RetrieveFilmsWithPeople(ctx context.Context, in *pbfilms.Retrie
 		return nil, err
 	}
 	defer db.Close()
-
-	filmsWithPeople, err := ent.GetFilmsWithPeople(ctx, db, in.GetLimit())
+	limit := in.GetLimit()
+	if limit == 0 {
+		limit = 250
+	}
+	filmsWithPeople, err := ent.GetFilmsWithPeople(ctx, db, limit)
 	if err != nil {
 		return nil, status.Errorf(xerrors.Internal, "GetFilmsWithPeople: %v", err)
 	}
