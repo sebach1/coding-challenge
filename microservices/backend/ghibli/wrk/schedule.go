@@ -23,5 +23,5 @@ func Schedule(ctx context.Context, j *Job) {
 }
 
 var (
-	SyncFilms = &Job{Name: "sync-films", Task: SyncGhibliFilms, RampUp: 55 * time.Second}
+	SyncFilms = &Job{Name: "sync-films", Task: SyncGhibliFilms, RampUp: 1 * time.Minute}
 )

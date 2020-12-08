@@ -3,6 +3,7 @@ package wrk
 import (
 	"context"
 	"crypto/tls"
+	"io"
 	"net/http"
 	"time"
 
@@ -29,6 +30,7 @@ func SyncGhibliFilms(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "CreateFilms")
 	}
+	defer filmsCreateCli.CloseSend()
 	return syncGhibliFilms(ctx, filmsCreateCli)
 }
 
@@ -51,7 +53,17 @@ func syncGhibliFilms(ctx context.Context, filmsCli pbfilms.Films_CreateFilmsClie
 			return errors.Wrap(err, "Send")
 		}
 	}
-	return SyncGhibliPeople(ctx)
+	err = SyncGhibliPeople(ctx)
+	if err != nil {
+		return errors.Wrap(err, "SyncGhibliPeople")
+	}
+
+	_, err = filmsCli.CloseAndRecv()
+	if err != nil && !errors.Is(err, io.EOF) {
+		return errors.Wrap(err, "CloseAndRecv")
+	}
+
+	return nil
 }
 
 func SyncGhibliPeople(ctx context.Context) error {
@@ -72,20 +84,20 @@ func syncGhibliPeople(ctx context.Context, filmsCli pbfilms.FilmsClient) error {
 	if err != nil {
 		return errors.Wrap(err, "GetPeople")
 	}
-
 	peopleCreateClient, err := filmsCli.CreatePeople(ctx)
 	if err != nil {
 		return errors.Wrap(err, "CreatePeople")
 	}
+	defer peopleCreateClient.CloseSend()
 	err = syncGhibliPeopleCreation(ctx, peopleCreateClient, ppl)
 	if err != nil {
 		return errors.Wrap(err, "syncGhibliPeopleCreation")
 	}
-
 	joinsCreateClient, err := filmsCli.CreateJoinPeopleFilm(ctx)
 	if err != nil {
 		return errors.Wrap(err, "CreateJoinPeopleFilm")
 	}
+	defer joinsCreateClient.CloseSend()
 	err = syncGhibliPeopleJoins(ctx, joinsCreateClient, ppl)
 	if err != nil {
 		return errors.Wrap(err, "syncGhibliPeopleJoins")
@@ -100,6 +112,10 @@ func syncGhibliPeopleCreation(ctx context.Context, filmsCli pbfilms.Films_Create
 			return errors.Wrap(err, "Send")
 		}
 	}
+	_, err := filmsCli.CloseAndRecv()
+	if err != nil && !errors.Is(err, io.EOF) {
+		return errors.Wrap(err, "CloseAndRecv")
+	}
 	return nil
 }
 
@@ -111,6 +127,10 @@ func syncGhibliPeopleJoins(ctx context.Context, filmsCli pbfilms.Films_CreateJoi
 				return errors.Wrap(err, "Send")
 			}
 		}
+	}
+	_, err := filmsCli.CloseAndRecv()
+	if err != nil && !errors.Is(err, io.EOF) {
+		return errors.Wrap(err, "CloseAndRecv")
 	}
 	return nil
 }
