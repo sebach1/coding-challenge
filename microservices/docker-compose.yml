@@ -1,10 +1,17 @@
 version: "3"
 services:
+  frontend:
+    build:
+      context: frontend
+    ports:
+     - "8000:8000"
+
   films_db:
-    env_file: backend/users/build/db/dev.env
+    env_file: backend/films/build/db/dev.env
     image: postgres@sha256:baf51b409ec8d7ee043bc33014e3c01ec06bcfbd0afa7b4cc5973fe56f46d09f
     volumes:
       - films_db:/var/lib/postgresql/data
+
 
   films_svc:
     env_file: backend/films/build/svc/dev.env
@@ -14,6 +21,7 @@ services:
         svc_name: films
     ports:
       - "9990:9990"
+      - "10000:10000"
     volumes:
       - ./backend/films/migrations:/films/migrations
     depends_on:
@@ -24,18 +32,7 @@ services:
     build:
       context: backend/ghibli
       args:
-        svc_name: ghibli 
-    ports:
-      - "9991:9991"
-    depends_on:
-      - ghibli_redis
-
-  ghibli_redis:
-    image: redis@sha256:11c668c42354850a57e763dfaf466377160b4b7f8ca8a3386d1fe7635ad49925
-    command: redis-server --requirepass redis_pwd
-    volumes:
-      - ghibli_redis:/data
+        svc_name: ghibli
 
 volumes:
   films_db:
-  ghibli_redis:
