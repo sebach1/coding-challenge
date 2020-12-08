@@ -136,26 +136,28 @@ func RegisterFilmsHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
 // "FilmsClient" to call the correct interceptors.
 func RegisterFilmsHandlerClient(ctx context.Context, mux *runtime.ServeMux, client FilmsClient) error {
+	meths := []string{"GET", "OPTIONS"}
+	for _, m := range meths {
+		mux.Handle(m, pattern_Films_RetrieveFilmsWithPeople_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+			ctx, cancel := context.WithCancel(req.Context())
+			defer cancel()
+			inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+			rctx, err := runtime.AnnotateContext(ctx, mux, req, "/films.Films/RetrieveFilmsWithPeople")
+			if err != nil {
+				runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+				return
+			}
+			resp, md, err := request_Films_RetrieveFilmsWithPeople_0(rctx, inboundMarshaler, client, req, pathParams)
+			ctx = runtime.NewServerMetadataContext(ctx, md)
+			if err != nil {
+				runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+				return
+			}
 
-	mux.Handle("GET", pattern_Films_RetrieveFilmsWithPeople_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/films.Films/RetrieveFilmsWithPeople")
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_Films_RetrieveFilmsWithPeople_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
+			forward_Films_RetrieveFilmsWithPeople_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
-		forward_Films_RetrieveFilmsWithPeople_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
+		})
+	}
 
 	return nil
 }
